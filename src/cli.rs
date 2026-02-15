@@ -46,4 +46,8 @@ pub struct Cli {
     /// Validation retry count
     #[arg(long = "max-attempts", default_value_t = 3)]
     pub max_attempts: usize,
+
+    /// Print explanation blocks under generated command
+    #[arg(short = 'e', long = "explanation")]
+    pub explanation: bool,
 }

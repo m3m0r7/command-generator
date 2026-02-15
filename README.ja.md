@@ -20,6 +20,7 @@
 - セッション保存と再開（UUID）
 - `--resume` 時に過去コンテキストを起動直後に表示
 - `-c/--copy` で出力コマンドをクリップボードへコピー
+- `-e/--explanation` でコマンドの説明ブロックを出力
 
 ## 必要環境
 
@@ -52,7 +53,7 @@ cg
 ```text
 > $PATH に特定の文字列が入っていたら yes、それ以外は no と出力するようにして
 ? PATH に含まれるか確認したい文字列を入力してください: mytool
-[[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes || print -r -- no
+([[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes) || print -r -- no
 > exit
 Good Bye!
 ```
@@ -64,7 +65,7 @@ Good Bye!
 ```text
 > $PATH に特定の文字列が入っていたら yes、それ以外は no と出力するようにして
 ? PATH に含まれるか確認したい文字列を入力してください: mytool
-[[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes || print -r -- no
+([[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes) || print -r -- no
 ```
 
 ### 例2: yes/no 質問で条件を確定
@@ -99,6 +100,7 @@ Interactive mode. Type exit to finish.
     --generated-history-lines <N>         過去生成コマンド取り込み行数（default: 80）
     --context-turns <N>                   セッション文脈の最大ターン数（default: 12）
     --max-attempts <N>                    検証失敗時の再生成回数（default: 3）
+-e, --explanation                         コマンド説明ブロックを出力
 ```
 
 ## モデルとプロバイダ
@@ -156,6 +158,11 @@ cg -r <uuid>
 
 注: `--once` では対話質問に答えられないため、質問が必要な要求はエラーになります。  
 その場合は対話モード（`cg`）を使用してください。
+
+## リリース自動化
+
+`v*` タグを push すると GitHub Actions が自動でビルドし、GitHub Release を作成します。  
+手動実行する場合は `workflow_dispatch` の `tag` 入力を使います。
 
 ## 開発用コマンド
 

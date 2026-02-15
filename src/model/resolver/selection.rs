@@ -1,46 +1,10 @@
 use anyhow::{Result, anyhow};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ProviderKind {
-    OpenAI,
-    Gemini,
-    Claude,
-}
+use super::super::provider_kind::{ProviderKind, provider_from_name};
+use super::env::{get_env, provider_from_model_name};
+use super::types::ProviderSelection;
 
-impl ProviderKind {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            ProviderKind::OpenAI => "openai",
-            ProviderKind::Gemini => "gemini",
-            ProviderKind::Claude => "claude",
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ProviderSelection {
-    pub provider: ProviderKind,
-    pub requested_model: Option<String>,
-}
-
-pub fn default_model(provider: ProviderKind) -> &'static str {
-    match provider {
-        ProviderKind::OpenAI => "gpt-5.2",
-        ProviderKind::Gemini => "gemini-2.5-flash",
-        ProviderKind::Claude => "claude-sonnet-4-5",
-    }
-}
-
-pub fn provider_from_name(name: &str) -> Option<ProviderKind> {
-    match name.trim().to_lowercase().as_str() {
-        "openai" => Some(ProviderKind::OpenAI),
-        "gemini" | "google" => Some(ProviderKind::Gemini),
-        "claude" | "anthropic" => Some(ProviderKind::Claude),
-        _ => None,
-    }
-}
-
-pub fn resolve_provider_selection(
+pub(super) fn resolve_provider_selection_internal(
     model_arg: Option<&str>,
     override_key: Option<&str>,
     allow_no_key: bool,
@@ -51,23 +15,7 @@ pub fn resolve_provider_selection(
     }
 }
 
-pub fn resolve_key(provider: ProviderKind, override_key: Option<&str>) -> Result<String> {
-    if let Some(key) = override_key {
-        let trimmed = key.trim();
-        if !trimmed.is_empty() {
-            return Ok(trimmed.to_string());
-        }
-    }
-
-    match provider {
-        ProviderKind::OpenAI => get_env("OPENAI_API_KEY"),
-        ProviderKind::Gemini => get_env("GEMINI_API_KEY").or_else(|| get_env("GOOGLE_API_KEY")),
-        ProviderKind::Claude => get_env("ANTHROPIC_API_KEY"),
-    }
-    .ok_or_else(|| anyhow!("API key not found for provider '{}'", provider.as_str()))
-}
-
-fn parse_model_arg(
+pub(super) fn parse_model_arg(
     model_arg: &str,
     override_key: Option<&str>,
     allow_no_key: bool,
@@ -145,34 +93,6 @@ fn infer_default_provider(override_key: Option<&str>, allow_no_key: bool) -> Res
     Err(anyhow!(
         "no API key found (checked OPENAI_API_KEY, GEMINI_API_KEY/GOOGLE_API_KEY, ANTHROPIC_API_KEY, and --key)"
     ))
-}
-
-fn provider_from_model_name(model: &str) -> Option<ProviderKind> {
-    let lowered = model.trim().to_lowercase();
-    if lowered.is_empty() {
-        return None;
-    }
-    if lowered.starts_with("gpt-")
-        || lowered.starts_with("o1")
-        || lowered.starts_with("o3")
-        || lowered.starts_with("o4")
-    {
-        return Some(ProviderKind::OpenAI);
-    }
-    if lowered.starts_with("gemini") {
-        return Some(ProviderKind::Gemini);
-    }
-    if lowered.starts_with("claude") {
-        return Some(ProviderKind::Claude);
-    }
-    None
-}
-
-fn get_env(key: &str) -> Option<String> {
-    std::env::var(key)
-        .ok()
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty())
 }
 
 #[cfg(test)]

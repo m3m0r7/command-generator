@@ -20,6 +20,7 @@ It includes command validation, session persistence/resume, and clarification qu
 - Session save/resume by UUID
 - Prints prior context when started with `--resume`
 - `-c/--copy` to copy generated command to clipboard
+- `-e/--explanation` to print command explanation blocks
 
 ## Requirements
 
@@ -52,7 +53,7 @@ Example:
 ```text
 > Output yes if $PATH contains a specific string, otherwise no
 ? Enter the string to check in PATH: mytool
-[[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes || print -r -- no
+([[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes) || print -r -- no
 > exit
 Good Bye!
 ```
@@ -64,7 +65,7 @@ Good Bye!
 ```text
 > Output yes if $PATH contains a specific string, otherwise no
 ? Enter the string to check in PATH: mytool
-[[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes || print -r -- no
+([[ ":$PATH:" == *":mytool:"* ]] && print -r -- yes) || print -r -- no
 ```
 
 ### Example 2: Requirement fixed by yes/no clarification
@@ -99,6 +100,7 @@ Interactive mode. Type exit to finish.
     --generated-history-lines <N>         Generated-command history lines (default: 80)
     --context-turns <N>                   In-session context turns (default: 12)
     --max-attempts <N>                    Regeneration attempts after validation failure (default: 3)
+-e, --explanation                         Print explanation blocks
 ```
 
 ## Models and Providers
@@ -156,6 +158,11 @@ Generated commands are validated with:
 
 Note: `--once` cannot answer clarification questions.  
 If the model needs clarification, run in interactive mode (`cg`).
+
+## Release Automation
+
+Pushing a `v*` tag triggers GitHub Actions to build binaries and publish a GitHub Release automatically.  
+You can also run it manually via `workflow_dispatch` with the `tag` input.
 
 ## Development Commands
 
